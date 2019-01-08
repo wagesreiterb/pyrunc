@@ -3,9 +3,15 @@
 from argparse import ArgumentParser
 import sys
 
+
 parser = ArgumentParser(prog='pyrunc.py')
+parser.add_argument('--version', action='version', version='1.0.0')
+
 subparsers = parser.add_subparsers(help='sub command help')
+
 parser_create = subparsers.add_parser('create', help='help for create')
+parser_kill = subparsers.add_parser('kill', help='help for kill')
+
 parser_create.add_argument('container-id')
 parser_create.add_argument('--bundle')
 
@@ -16,11 +22,10 @@ parser.add_argument('--root', help='root directory for storage of container stat
 parser.add_argument('--criu', help='path to the criu binary used for checkpoint and restore', default='criu')
 parser.add_argument('--systemd-cgroup', help='enable systemd cgroup support, expects cgroupsPath to be of form "slice:prefix:name" for e.g. "system.slice:runc:434234"', action='store_false')
 parser.add_argument('--rootless', help="ignore cgroup permission errors ('true', 'false', or 'auto')", default='auto')
-parser.add_argument('--version', help='print the version', action='store_true')
 
 
 args = parser.parse_args()
 
-if args.version:
-   print("pyrunc version 0.1.0")
-   print("spec: 1.0")
+#if args.version:
+#	print("pyrunc version 0.1.0")
+#	print("spec: 1.0")
