@@ -1,7 +1,7 @@
 import ctypes
 import time
 
-# https://stackoverflow.com/questions/13373629/clone-process-support-in-python/13374670
+#  https://stackoverflow.com/questions/13373629/clone-process-support-in-python/13374670
 
 def myfunc():
     #libc.execve("/bin/sh", "", "")
@@ -32,7 +32,7 @@ child_stack_instance_pointer = ctypes.cast(child_stack_instance, ctypes.POINTER(
 # define CLONE_NEWPID	0x20000000	/* New pid namespace */
 # define CLONE_NEWUSER	0x10000000	/* New user namespace */
 # define CLONE_VM	0x00000100	/* set if VM shared between processes */
-# https://github.com/torvalds/linux/blob/master/include/uapi/linux/sched.h
+# SIGCHLD - 17 - https://github.com/torvalds/linux/blob/master/include/uapi/linux/sched.h
 
 child_pid = libc.clone(mylibc.sleeper(10), child_stack_instance, 0x20000000 | 17 | 0x00000100, 0)    # Todo: child_stack_instance + STACK_SIZE
 print(child_pid)
