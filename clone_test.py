@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys
-from ctypes import *
+import ctypes
 import time
 import subprocess
 
@@ -13,14 +13,14 @@ if sys.version_info < MIN_PYTHON:
 # https://stackoverflow.com/questions/13373629/clone-process-support-in-python/13374670
 # https://stackoverflow.com/questions/37032203/make-syscall-in-python
 
-libc = CDLL("libc.so.6")
-mylibc = CDLL("/home/que/PycharmProjects/pyrunc/testlib.so")
+libc = ctypes.CDLL("libc.so.6")
+mylibc = ctypes.CDLL("/home/que/PycharmProjects/pyrunc/testlib.so")
 
 # Create stack.
 #stack = c_char_p(" " * 8096)    # works in python Python 2.7.15rc1 but not in Python 3.6.7
 
 aaa = " "
-stack = c_char_p(aaa.encode('utf-8') * 1024 * 1024)
+stack = ctypes.c_char_p(aaa.encode('utf-8') * 1024 * 1024)
 
 
 def f():
@@ -51,19 +51,33 @@ def call_binary():
 
 
 # Convert function to c type returning an integer.
-f_c = CFUNCTYPE(c_int)(f)
-call_binary_c = CFUNCTYPE(c_int)(call_binary)
+f_c = ctypes.CFUNCTYPE(ctypes.c_int)(f)
+call_binary_c = ctypes.CFUNCTYPE(ctypes.c_int)(call_binary)
 
 # We need the top of the stack.
-stack_top = c_void_p(cast(stack, c_void_p).value + 8096)
+stack_top = ctypes.c_void_p(ctypes.cast(stack, ctypes.c_void_p).value + 8096)
 
 # Call clone with the NEWPID Flag
+CLONE_NEWPID = 0x20000000   # New pid namespace
+CLONE_NEWUSER = 0x10000000  # New user namespace
 
-print("start cloning")
-pid = libc.clone(f_c, stack_top, 0x20000000 | 17, 0)        # works
+
+#print("start cloning")
+#pid = libc.clone(f_c, stack_top, 0x20000000 | 17, 0)        # works
 #pid = libc.clone(call_binary_c, stack_top, 0x20000000 | 17, 0)
-time.sleep(1)
-print(pid)
+
+
+time.sleep(30)
+
+#####################################################################
+# works for CLONE_NEWUSER but not for CLONE_NEWPID
+libc.unshare(CLONE_NEWPID | CLONE_NEWUSER)
+cmd = "/bin/sh"
+b_cmd = cmd.encode('utf-8')     # create byte objects from the strings
+libc.execvp(ctypes.c_char_p(b_cmd), 0, 0)
+#####################################################################
+
+
 
 file = open("/home/que/PycharmProjects/pyrunc/testfile.txt", "a")
 file.write("parent\n")
@@ -71,4 +85,4 @@ file.close()
 
 
 # https://stackoverflow.com/questions/89228/calling-an-external-command-in-python
-subprocess.call("/bin/sh")
+#subprocess.call("/bin/sh")
