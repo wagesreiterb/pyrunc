@@ -7,7 +7,8 @@ libc = CDLL("libc.so.6")
 def chroot(rootfs_path, cwd):
     # Todo: cwd shall be optional, if it is missing then CWD = "/"
     chroot_path_p = c_char_p(rootfs_path.encode('utf-8'))
-    libc.chroot(chroot_path_p)
+    ret = libc.chroot(chroot_path_p)
+    assert (ret != -1), "couldn't chroot into directory " + rootfs_path
 
     chdir_path = cwd  # "/"
     chdir_path_p = c_char_p(chdir_path.encode('utf-8'))
