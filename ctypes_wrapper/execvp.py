@@ -15,8 +15,6 @@ libc = ctypes.CDLL("libc.so.6")
 def execvp(cmd):
     # cmd = "/bin/sh"
     b_cmd = cmd.encode('utf-8')     # create byte objects from the strings
-    libc.execvp(ctypes.c_char_p(b_cmd), 0, 0)
+    ret = libc.execvp(ctypes.c_char_p(b_cmd), 0, 0)
+    assert (ret == 0), "libc.execvp couldn't execute file"
 
-
-def print_version():
-    return "Version 1.0"
