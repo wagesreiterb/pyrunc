@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+
 import sys
 import ctypes
 import time
@@ -80,9 +81,6 @@ libc.waitpid(pid, None, 0)
 
 
 time.sleep(0)
-
-
-
 
 
 
