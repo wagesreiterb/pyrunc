@@ -26,28 +26,20 @@ exec_cmd = ""
 
 def call_binary():
     # cmd = "/bin/sh"
+    cmd_list = ["arg_test.sh", "arg_1", "arg_2"]
     b_cmd = exec_cmd.encode('utf-8')     # create byte objects from the strings
-    # pid_t pid
-    # pid_t pgid
-    # print(libc.getpid())
-    # libc.getpgid()
-    # libc.setpgrp(3, 3)
-    # print("1.) libc.getpid(): ", libc.getpid())
-    # print("2.) libc.getpgrp(): ", libc.getpgrp())
-    # ret = libc.execvp(ctypes.c_char_p(b_cmd), 0, 0)
-    # string_buffers = ((ctypes.c_char * 8) * 4)()
-    # mystr1 = ctypes.c_char_p("mystring")
-    # arg0 = ctypes.create_string_buffer(b_cmd)
-    # pointers = [ctypes.addressof(ctypes.create_string_buffer(8)) for i in range(4)]
-    pData = (ctypes.c_char_p * 2)(b_cmd)
 
-    # int execve(const char * filename, char * const argv[], char * const envp[]);
+    argv_1 = "argv_1"
+    b_argv_1 = argv_1.encode('utf-8')
+
     argv = (ctypes.c_char_p * 2)(b_cmd)
+
     env0_string = "USER=root"
     env0 = env0_string.encode('utf-8')
     envp = (ctypes.c_char_p * 2)(env0)
+
+    # int execve(const char * filename, char * const argv[], char * const envp[]);
     ret = libc.execve(ctypes.c_char_p(b_cmd), argv, envp)
-    print("ret", ret)
 
     return ret
 
@@ -58,18 +50,12 @@ def clone(cmd):
     exec_cmd = cmd
     assert (exec_cmd != ""), "cmd to be executed is empty"
 
-    # pid = libc.clone(call_binary_c, stack_top, CLONE_NEWPID | SIGCHLD | CLONE_VFORK, 0)  # works
-    # print("1.) libc.getpid(): ", libc.getpid())
-    # print("1.) libc.getpgrp(): ", libc.getpgrp())
-
     # convert the function call_binary into C-style
     call_binary_c = ctypes.CFUNCTYPE(ctypes.c_int)(call_binary)
     pid = libc.clone(call_binary_c, stack_top,
                      CLONE_NEWPID | SIGCHLD | CLONE_VFORK | CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWCGROUP | CLONE_NEWNET | CLONE_NEWUSER | CLONE_NEWIPC,
-                     0)  # works
+                     0)
 
-    # print("3.) libc.getpgrp(): ", libc.getpgrp())
-    # print("pid: ", pid)
     assert (pid != -1), "couldn't clone - do you have root permissions?"
 
     libc.waitpid(pid, None, 0)  # Todo: waitpid shall have its own wrapper most probably
