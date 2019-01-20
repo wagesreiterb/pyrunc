@@ -29,33 +29,38 @@ def call_binary():
     function which is called by the clone system call from the clone function
     """
     #cmd = "./tmp/arg_test.sh"
-    cmd_byte = exec_cmd.encode('utf-8')     # create byte objects from the strings
+    cmd_b = exec_cmd.encode('utf-8')     # create byte objects from the strings
 
-    '''
-    ### works ### ### works ### ### works ### ### works ###
+    ########## old version ##########
+    # args = [exec_cmd, "arg01", "arg02", "arg03", "arg04", "arg05"]
+    # length_of_list = len(args)
+    # length_of_list += 1  # pointer array must be null-terminated, therefore add 1
+    # # initialize the ctypes array of pointers
+    # b_argv = (ctypes.c_char_p * length_of_list)(cmd_byte)
+    # i = -1
+    # for pt in b_argv:
+    #     arg = args[i].encode('utf-8')
+    #     b_argv[i] = arg
+    #     i = i + 1
+    # b_argv[i] = None
+    ########## old version ##########
 
-    argv_0 = "argv_0"
-    argv_0_byte = argv_0.encode('utf-8')
+    # args = [b'arg1', b'arg2', b'arg3']
+    args = ["arg1", "arg2", "arg3", "arg3"]
+    args_len = len(args)
+    args_b = [None] * args_len  # list for null-terminated char array
+    i = 0
+    for arg in args:
+        args_b[i] = arg.encode('utf-8')
+        i += 1
 
-    argv_1 = "argv_1"
-    argv_1_byte = argv_1.encode('utf-8')
+    # https://stackoverflow.com/questions/54279037/call-ctypes-execve-with-dynamic-list-of-argumenst
+    cargs = (ctypes.c_char_p * (len(args) + 2))(cmd_b, *args_b, None)
 
-    argv_2 = "argv_2"
-    argv_2_byte = argv_2.encode('utf-8')
-
-    argv_3 = "argv_3"
-    argv_3_byte = argv_3.encode('utf-8')
-
-    b_argv = (ctypes.c_char_p * 5)(argv_0_byte, argv_1_byte, argv_2_byte, argv_3_byte)
-
-    ### works ### ### works ### ### works ### ### works ###
-    '''
-
-    b_argv = (ctypes.c_char_p * 5)(cmd_byte)
     # int execve(const char * filename, char * const argv[], char * const envp[]);
-    ret = libc.execve(ctypes.c_char_p(cmd_byte), b_argv, 0)
+    ret = libc.execve(ctypes.c_char_p(cmd_b), cargs, 0)  # Todo: envp
 
-    return ret
+    return ret  # Todo: ret only in case of an error -> should be changed to assert
 
 
 def get_namespaces_flags(list_of_flags):
@@ -92,6 +97,7 @@ def clone(cmd, namespaces_list):
     exec_cmd = cmd
     assert (exec_cmd != ""), "cmd to be executed is empty"
 
+
     call_binary_c = ctypes.CFUNCTYPE(ctypes.c_int)(call_binary)  # convert the function call_binary into C-style
 
     # pid = libc.clone(call_binary_c, stack_top,
@@ -100,59 +106,11 @@ def clone(cmd, namespaces_list):
 
     # flags_list = ["pid", "network", "ipc", "uts", "mount", "user", "cgroup"]
     namespaces_flags = get_namespaces_flags(namespaces_list)
+    # Todo: ^C doesn't work
     pid = libc.clone(call_binary_c, stack_top,
                      namespaces_flags | SIGCHLD | CLONE_VFORK,
                      0)  # Todo: what is that for?!
 
     assert (pid != -1), "couldn't clone - do you have root permissions?"
 
-    libc.waitpid(pid, None, 0)  # Todo: waitpid shall have its own wrapper most probably
-
-
-
-#######################################################################################
-
-    #hello = b"Hello World"
-    #ctypes.c_char_p(argv_1_byte)
-
-    # a = (ctypes.c_void_p * 2)
-
-    #for i in range(4):
-    #    argv = "argv"
-    #    argv_byte = argv.encode('utf-8')
-    #    ctypes.c_char_p(argv_byte)
-
-    #string_buffers = ((ctypes.c_char * 6) * 4)()
-    #string_buffers[1] = ctypes.create_string_buffer(b"Hello")
-
-    #p = ctypes.create_string_buffer(b"Hello")  # create a buffer containing a NUL terminated string
-    #my_array = ctypes.c_char_p * 10
-
-    # string_buffers[1] = argv_1
-    #argv_1 = "argv_1"
-    #argv_1_byte = argv_1.encode('utf-8')
-
-    #xxx = (ctypes.c_char_p * 10)(8)
-    #pi = ctypes.pointer(xxx)
-    #string_buffer = ctypes.create_string_buffer(b"Hello", 10)
-    #string_buffer_p = ctypes.pointer(ctypes.cast(string_buffer, ctypes.c_char_p))
-    #pi[0] = string_buffer_p
-
-
-    # argv_list = ["./tmp/arg_test.sh", "arg_1", "arg_2"]
-    # for arg in argv_list:
-    #    print(arg)
-
-
-
-
-    #a = numpy.array(['apples', 'foobar', 'cowboy'])
-    #a[2] = 'bananas'
-    #print(a)
-    #a.ctypes.data_as(ctypes.POINTER(ctypes.c_char)).contents
-
-
-
-    #env0_string = "USER=root"
-    #env0 = env0_string.encode('utf-8')
-    #envp = (ctypes.c_char_p * 2)(env0)
+    libc.waitpid(pid, None, 0)  # Todo: waitpid shall has its own wrapper most probably
