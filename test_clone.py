@@ -8,7 +8,12 @@ import sys
 
 # clone.clone("")
 # print(sys.argv[1])
+
 flags_list = ["pid", "network", "ipc", "uts", "mount", "user", "cgroup"]
-clone.clone(sys.argv[1], flags_list)
+args_list = []
+clone.clone(sys.argv[1], flags_list, args_list)
+
+
+
 # clone.clone(sys.argv[1])
 # clone.clone("/bin/sh")
