@@ -10,6 +10,8 @@
 import ctypes
 from signals_flags import *
 from miscellaneous.miscellaneous import *
+from ctypes_wrapper.sethostname import *
+from ctypes_wrapper.chroot import *
 
 
 check_python_version()
@@ -28,7 +30,8 @@ def call_binary():
     """
     function which is called by the clone system call from the clone function
     """
-    chroot()
+    chroot("/home/que/Bernhard/docker/ubuntu/rootfs", "/")
+    set_hostname("pyrunc")
 
     # cmd = "./tmp/arg_test.sh"
     cmd_b = exec_cmd.encode('utf-8')     # create byte objects from the strings
@@ -47,18 +50,6 @@ def call_binary():
     ret = libc.execve(ctypes.c_char_p(cmd_b), cargs, 0)  # Todo: envp
 
     return ret  # Todo: ret only in case of an error -> should be changed to assert
-
-
-def chroot():
-    chroot_path = "/home/que/Bernhard/docker/ubuntu/rootfs"
-    chroot_path_b = chroot_path.encode('utf-8')
-    chroot_path_p = ctypes.c_char_p(chroot_path_b)
-    libc.chroot(chroot_path_p)
-
-    chdir_path = "/"
-    chdir_path_b = chdir_path.encode('utf-8')
-    chdir_path_p = ctypes.c_char_p(chdir_path_b)
-    libc.chdir(chdir_path_p)
 
 
 def get_namespaces_flags(namespaces_list):
@@ -111,6 +102,7 @@ def clone(command, namespaces_list, args_list):
     namespaces_flags = get_namespaces_flags(namespaces_list)
     # Todo: ^C doesn't work
     # Todo: after exiting a "sh" the following error is print "/bin/sh: 11: Cannot set tty process group (No such process)"
+
     pid = libc.clone(call_binary_c, stack_top,
                      namespaces_flags | SIGCHLD | CLONE_VFORK,
                      0)  # Todo: what is that for?!
