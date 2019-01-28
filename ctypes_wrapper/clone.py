@@ -31,8 +31,16 @@ def call_binary():
     """
     function which is called by the clone system call from the clone function
     """
-    chroot("/home/que/Bernhard/docker/ubuntu/rootfs", "/")
+    chroot("/home/que/Bernhard/docker/busybox/rootfs", "/")
     set_hostname("pyrunc")
+
+    mount()
+
+    #libc.setsid()
+    #ret_setuid = libc.setuid(0)
+
+
+
 
     # cmd = "./tmp/arg_test.sh"
     cmd_b = exec_cmd.encode('utf-8')     # create byte objects from the strings
@@ -136,7 +144,35 @@ def clone(command, namespaces_list, args_list):
     child_pid = waitpid(pid, 0)
 
 
+def mount():
+    ########## mount ##########
+    # http://advinpy.blogspot.com/2015/11/mount-and-umount-with-ctypes.html
+    #mountSource = "/home/addy/workspace/pymount/test3".encode(encoding='ascii', errors='replace')
+    #mountTarget = "/home/addy/workspace/pymount/test4".encode(encoding='ascii', errors='replace')
+    #retCode = libc.mount(mountSource, mountTarget, None, 4096, None)
 
+    #int mount(const char * source,
+    #            const char * target,
+    #            const char * filesystemtype,
+    #            unsigned long mountflags,
+    #            const void * data
+    #        );
+    mountSource = "proc".encode(encoding='ascii', errors='replace')
+    mountTarget = "/proc".encode(encoding='ascii', errors='replace')
+    fsType = "proc".encode(encoding='ascii', errors='replace')
+    libc.mount(mountSource, mountTarget, fsType, None, None)
+
+
+    mountSource = "sysfs".encode(encoding='ascii', errors='replace')
+    mountTarget = "/sys".encode(encoding='ascii', errors='replace')
+    fsType = "sysfs".encode(encoding='ascii', errors='replace')
+    flags = "ro".encode(encoding='ascii', errors='replace')
+
+    # https://elixir.bootlin.com/linux/v4.3/source/include/uapi/linux/fs.h  # L68
+    MS_RDONLY = 1  # Mount read-only
+    libc.mount(mountSource, mountTarget, fsType, MS_RDONLY, None)
+
+    ########## mount ##########
 
 
 
