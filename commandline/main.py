@@ -1,27 +1,17 @@
-# https://gist.github.com/olooney/8155400 - argparse example
-
-from argparse import ArgumentParser
-from commandline import cmd_run, cmd_list, cmd_kill
+'''from argparse import ArgumentParser
+from commandline import run_old #, list
 
 
-parser = ArgumentParser(prog='pyrunc.py',
-                        description="performs a variety of operations on a file.",
-                        epilog="(c) Bernhard Wagesreiter, use it at your own risk!",
-                        # fromfile_prefix_chars='@',
-                        )
+parser = ArgumentParser(prog='pyrunc.py')
 
-
-
-commands = parser.add_subparsers(dest="command", help="commands")
-parser_run = commands.add_parser("run", help="create and run a container")
+commands = parser.add_subparsers(dest="command", help="sub-commands")
+parser_run = commands.add_parser("run")
 parser_run.add_argument('containerID', help="create and run a container", metavar='containerID')
-parser_run.add_argument('--detach', action='store_true', help="detach from the container's process")
 
 parser_list = commands.add_parser("list", help="lists containers started by runc with the given root")
-parser_list.add_argument('--quiet', action='store_true', help="display only container IDs")
 
-parser_kill = commands.add_parser("kill", help="kill sends the specified signal (default: SIGTERM) to the container's init process")
-parser_kill.add_argument('--all', action='store_true', help="send the specified signal to all processes inside the container")
+
+
 
 #subparsers = parser.add_subparsers(help='sub command help')
 
@@ -38,6 +28,10 @@ parser_kill.add_argument('--all', action='store_true', help="send the specified 
 #parser_create.add_argument('--bundle')
 
 
+
+
+
+
 parser.add_argument('--version', action='version', version='1.0.0')
 parser.add_argument('--debug', help='enable debug output for logging', action='store_true')
 parser.add_argument('--log', help='set the log file path where internal debug information is written', default='/dev/null')
@@ -48,13 +42,45 @@ parser.add_argument('--systemd-cgroup', help='enable systemd cgroup support, exp
 parser.add_argument('--rootless', help="ignore cgroup permission errors ('true', 'false', or 'auto')", default='auto')
 
 
+
+#if args.run:
+#    print("debug is on")
+#    subparsers = parser.add_subparsers(help='sub command help')
+#    parser_run = run.create_subparser(parser, subparsers)
+    # print("spec: 1.0")
+#else:
+#    print("debug is off")
+#print(args.debug)
+
+#args = parser.parse_args()
+
+
+def handler_run(args):
+    print("enter handler_list")
+    if args.run:
+        print('run')
+
+    if args.detach:
+        print('detach')
+
+
+def handler_list(args):
+    print("enter handler_list")
+    if args.quiet:
+        print('quiet')
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
-    if args.command == 'run':
-        cmd_run.handler_run(args)
+    if args.command == 'count':
+        handler_run(args)
     elif args.command == 'list':
-        cmd_list.handler_list(args)
-    elif args.command == 'kill':
-        cmd_kill.handler_kill(args)
-    else:
-        parser.print_help()
+        handler_list(args)
+
+
+args = parser.parse_args()
+if args.command == 'run':
+    handler_run(args)
+elif args.command == 'list':
+    handler_list(args)
+'''
